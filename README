@@ -3,3 +3,7 @@ QlikView Developer Training
 
 Short tutorial demonstrating basic methodology on QlikView Developer
 
+Source Control Integration
+----------
+Current ClikView Application Version 11.00.xx does not offer integration with Git. It does offer integration with Svn and Microsoft MSSCCI.
+ClikView Application works only on Windows XP or later.
