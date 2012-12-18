@@ -63,19 +63,29 @@ MAPPING LOAD
     DivisionName;
 SQL SELECT *
 FROM Divisions;
+
+BudgetsTemp:
 CrossTable(BudgetYear, Budget, 1)
 LOAD Office&'-'&EmployeeID as OfficeEmployee, 
-     2005, 
-     2006, 
-     2007, 
-     2008, 
-     2009
+     [2005], 
+     [2006], 
+     [2007], 
+     [2008], 
+     [2009]
 FROM
 C:\QlikViewTraining\DeveloperI\Chapter12\Datasources\Budget.xls
 (biff, embedded labels, header is 1 lines, table is Sheet1$, filters(
 Replace(1, top, StrCnd(null))
 ));
 
+INPUTFIELD BudgetPrognosis;
+
+Budgets:
+LOAD *, 
+Budget as BudgetPrognosis
+RESIDENT BudgetsTemp;
+
+DROP TABLE BudgetsTemp;
 ///$tab Dimensions
 //************** Customers table **************
 
