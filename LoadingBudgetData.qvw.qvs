@@ -63,6 +63,19 @@ MAPPING LOAD
     DivisionName;
 SQL SELECT *
 FROM Divisions;
+CrossTable(BudgetYear, Budget, 1)
+LOAD Office&'-'&EmployeeID as OfficeEmployee, 
+     2005, 
+     2006, 
+     2007, 
+     2008, 
+     2009
+FROM
+C:\QlikViewTraining\DeveloperI\Chapter12\Datasources\Budget.xls
+(biff, embedded labels, header is 1 lines, table is Sheet1$, filters(
+Replace(1, top, StrCnd(null))
+));
+
 ///$tab Dimensions
 //************** Customers table **************
 
@@ -125,6 +138,7 @@ LOAD
 	[Hire Date],
 	Year([Hire Date]) AS HireYear,
 	Office,
+	Office&'-'&EmpID as OfficeEmployee,	
 	Extension,
 	[Reports To],
 	[Year Salary]
