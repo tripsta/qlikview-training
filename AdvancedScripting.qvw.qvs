@@ -1,0 +1,239 @@
+﻿///$tab Main
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$#,##0.00;($#,##0.00)';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+
+INPUTFIELD BudgetPrognosis;
+
+
+
+CONNECT TO [Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=Datasources\QWT.mdb;Mode=Share Deny None;Extended Properties="";Jet OLEDB:System database="";Jet OLEDB:Registry Path="";Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False];
+
+REM Quarters:
+LOAD	* INLINE [
+		Month, Quarter
+		1,Q1
+		2,Q1
+		3,Q1
+		4,Q2
+		5,Q2
+		6,Q2
+		7,Q3
+		8,Q3
+		9,Q3
+		10,Q4
+		11,Q4
+		12,Q4];
+
+REM Quarters:
+LOAD
+	rowno() as Month,
+	'Q' & Ceil(rowno()/3) as Quarter
+AUTOGENERATE(12); 
+
+
+
+$(Include=datasources\email.txt)
+///$tab Mapping Loads
+//*************QUARTERS MAPPING LOAD******************
+Quarters_Map:
+MAPPING LOAD
+	rowno() as Month,
+	'Q' & Ceil(rowno()/3) as Quarter
+AUTOGENERATE(12); 
+
+
+//**************SHIPPERS MAPPING LOAD**************
+Shippers_Map:
+MAPPING LOAD 
+	ShipperID,
+	CompanyName AS Shippers;
+SQL SELECT *
+FROM Shippers;
+
+
+//************** DIVISIONS MAPPING LOAD **************
+Divisions_Map:
+MAPPING LOAD 
+	DivisionID,
+    DivisionName;
+SQL SELECT *
+FROM Divisions;
+///$tab Dimensions
+//************** Customers table **************
+
+Customers:
+LOAD Address,
+    City,
+    CompanyName,
+    ContactName,
+    Country,
+    CustomerID,
+    DivisionID,
+    applymap ('Divisions_Map', DivisionID) AS Division,
+    Fax,
+    Phone,
+    PostalCode,
+    StateProvince;
+SQL SELECT *
+FROM Customers;
+
+
+
+//************** Products table **************
+Products:
+LOAD CategoryID,
+    ProductID,
+    ProductName,
+    QuantityPerUnit,
+    SupplierID,
+    UnitCost,
+    //UnitPrice,
+    UnitsInStock,
+    UnitsOnOrder;
+SQL SELECT *
+FROM Products;
+
+
+
+
+///$tab Orders
+//***************ORDERS TABLE******************
+
+Orders:
+LOAD 
+	CustomerID,
+    EmployeeID,
+    EmployeeID as EmployeeSalesID,
+    Freight,
+    OrderDate,
+   	Year(OrderDate) AS Year,
+	Month(OrderDate) AS Month,
+	Day(OrderDate) AS Day,
+	applymap('Quarters_Map',num(month(OrderDate)),
+	null()) AS Quarter,
+	date(monthstart(OrderDate),'MMM-YYYY') 
+	AS MonthYear,
+    OrderID,
+    ShipperID,
+    applymap('Shippers_Map', ShipperID, 'MISSING') AS Shipper;
+SQL SELECT * 
+FROM Orders;
+
+
+//*************** Order Details table ***************
+OrderDetails:
+LOAD Discount,
+LineNo,
+OrderID,
+ProductID,
+Quantity,
+UnitPrice,
+UnitPrice * Quantity * (1 - Discount) AS
+LineSalesAmount;
+SQL SELECT * FROM `Order Details`;
+
+
+///$tab File Data
+//*************** Employees table ***************
+Employees:
+LOAD		
+	Office&'-'&EmpID AS BudgetKey,
+	EmpID AS EmployeeID,
+	[First Name]&' '&[Last Name] AS Name,	
+	Title,
+	[Hire Date],
+	Year([Hire Date]) AS HireYear,
+	Office,
+	Extension,
+	[Reports To],
+	[Year Salary]
+FROM Datasources\EmpOff.xls (biff, embedded labels, table is [Employee$]);
+		
+		
+
+//*************** Offices table ***************
+Offices:
+LOAD		
+	Office,
+	OfficeAddress,
+	OfficePostalCode,
+	OfficeCity,
+	OfficeStateProvince,
+	OfficePhone,
+	OfficeFax,
+	OfficeCountry
+FROM Datasources\EmpOff.xls (biff, embedded labels, table 
+is [Office$]);
+///$tab Sales Person
+//*************** SalesPersons table ***************
+SalesPersons:
+LOAD		
+	EmployeeID,
+	Name as SalesPerson,	
+	Title as SalesTitle
+RESIDENT Employees
+	//WHERE Title LIKE 'Sales*' or Title='President';
+	WHERE exists(EmployeeSalesID, EmployeeID); 
+///$tab Budget
+//****************BUDGETS TABLE********************
+
+
+BudgetsTemp:
+CROSSTABLE(BudgetYear, BudgetAmount, 1)
+LOAD Office&'-'&EmployeeID AS BudgetKey, 
+	[2005],
+	[2006],
+	[2007],
+	[2008],
+	[2009]
+FROM Datasources\Budget.xls 
+(biff, header is line, embedded labels, table is 
+[Sheet1$], filters(Replace(1, top, StrCnd(null))
+));
+
+
+Budgets:
+LOAD	*,
+	BudgetAmount AS BudgetPrognosis
+RESIDENT BudgetsTemp;
+DROP TABLE BudgetsTemp; 
+
+
+
+//SECOND LOAD TO CORRECT SYNTHETIC KEY
+//Budgets:
+//CROSSTABLE(BudgetYear, BudgetAmount, 1)
+//LOAD Office&'-'&EmployeeID AS BudgetKey, 
+//	[2005],
+//	[2006],
+//	[2007],
+//	[2008],
+//	[2009]
+//FROM Datasources\Budget.xls 
+//(biff, header is line, embedded labels, table is 
+//[Sheet1$], filters(Replace(1, top, StrCnd(null))
+//));
+
+
+//ORIGIANAL LOAD WITH SYNTHETIC KEYS
+
+//CROSSTABLE(BudgetYear, BudgetAmount, 2)
+//LOAD Office,
+//	EmployeeID,
+//	[2005],
+//	[2006],
+//	[2007],
+//	[2008],
+//	[2009]
+//FROM Datasources\Budget.xls (biff, header is line, embedded labels, table is Sheet1$, filters(
+//Replace(1, top, StrCnd(null))
+//));
+//
