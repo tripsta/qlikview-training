@@ -101,6 +101,16 @@ LOAD CategoryID,
 SQL SELECT *
 FROM Products;
 
+//-------- Start Multiple Select Statements ------
+LOAD CategoryID,
+    CategoryName,
+    Description,
+    IF(CategoryID = 5 OR CategoryID = 6, 'Footwear', 'Clothing') as CategoryType;
+SQL SELECT *
+FROM Categories;
+//-------- End Multiple Select Statements ------
+
+
 
 
 
