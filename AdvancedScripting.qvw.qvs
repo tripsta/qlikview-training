@@ -151,6 +151,7 @@ LineSalesAmount;
 SQL SELECT * FROM `Order Details`;
 
 Order_Sales_Amount:
+LEFT JOIN(Orders)
 LOAD OrderID,
 sum(LineSalesAmount) as OrderSalesAmount
 RESIDENT OrderDetails
