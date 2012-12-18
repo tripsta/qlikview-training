@@ -1,0 +1,121 @@
+﻿///$tab Main
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$#,##0.00;($#,##0.00)';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+
+OLEDB CONNECT TO [Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=C:\QlikViewTraining\DeveloperI\Chapter06\Datasources\QWT.mdb;Mode=Share Deny None;Extended Properties="";Jet OLEDB:System database="";Jet OLEDB:Registry Path="";Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False];
+
+LOAD * INLINE [
+    OrderMonth, Quarter
+    1, Q1
+    2, Q1
+    3, Q1
+    4, Q2
+    5, Q2
+    6, Q2
+    7, Q3
+    8, Q3
+    9, Q3
+    10, Q4
+    11, Q4
+    12, Q4
+];
+///$tab customers
+
+LOAD Address,
+    City,
+    CompanyName,
+    ContactName,
+    Country,
+    CustomerID,
+    DivisionID,
+    Fax,
+    Phone,
+    PostalCode,
+    StateProvince;
+SQL SELECT *
+FROM Customers;
+///$tab employees
+Employees:
+
+LOAD EmpID as EmployeeID, 
+     [Last Name], 
+     [First Name], 
+     Title, 
+     [Hire Date], 
+     Office, 
+     Extension, 
+     [Reports To], 
+     [Year Salary]
+FROM
+C:\QlikViewTraining\DeveloperI\Chapter12\Datasources\Employees_New.xls
+(biff, embedded labels, table is Employee$);
+
+///$tab products
+
+Products:
+LOAD CategoryID,
+    ProductID,
+    ProductName,
+    QuantityPerUnit,
+    SupplierID,
+    UnitCost,
+    UnitPrice,
+    UnitsInStock,
+    UnitsOnOrder;
+SQL SELECT *
+FROM Products;
+
+Categories:
+LOAD CategoryID,
+    CategoryName,
+    Description;
+SQL SELECT *
+FROM Categories;
+///$tab orders
+Orders:
+LOAD CustomerID,
+    EmployeeID,
+    Freight,
+    OrderDate,
+    year(OrderDate) as OrderYear,
+    month(OrderDate) as OrderMonth,
+    day(OrderDate) as OrderDay,
+    OrderID,
+    ShipperID;
+SQL SELECT *
+FROM Orders;
+
+`Order Details`:
+LOAD Discount,
+    LineNo,
+    OrderID,
+    ProductID,
+    Quantity,
+    UnitPrice as OrderUnitPrice;
+SQL SELECT *
+FROM `Order Details`;
+///$tab suppliers
+
+QUALIFY *;
+UNQUALIFY SupplierID;
+Suppliers:
+LOAD SupplierID,
+    CompanyName,
+    ContactName,
+    Address,
+    City,
+    PostalCode,
+    Country,
+    Phone,
+    Fax
+FROM C:\QlikViewTraining\DeveloperI\Chapter12\Datasources\Suppliers.xml (XmlSimple, Table is [Suppliers/_empty_]);
+
+UNQUALIFY *;
