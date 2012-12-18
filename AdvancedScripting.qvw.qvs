@@ -142,6 +142,9 @@ FROM Orders;
 
 
 OrderDetails:
+LOAD LineSalesAmount - CostOfGoodsSold as Margin, 
+	*
+;
 LOAD Discount,
 LineNo,
 OrderID,
@@ -152,6 +155,7 @@ UnitPrice * Quantity * (1 - Discount) AS
 LineSalesAmount,
 applymap('UnitCost_Map', ProductID, 0) * Quantity as CostOfGoodsSold;
 SQL SELECT * FROM `Order Details`;
+
 
 Order_Sales_Amount:
 LEFT JOIN(Orders)
