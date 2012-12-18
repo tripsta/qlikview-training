@@ -42,7 +42,6 @@ AUTOGENERATE(12);
 
 $(Include=datasources\email.txt)
 ///$tab Mapping Loads
-//*************QUARTERS MAPPING LOAD******************
 Quarters_Map:
 MAPPING LOAD
 	rowno() as Month,
@@ -50,7 +49,6 @@ MAPPING LOAD
 AUTOGENERATE(12); 
 
 
-//**************SHIPPERS MAPPING LOAD**************
 Shippers_Map:
 MAPPING LOAD 
 	ShipperID,
@@ -59,13 +57,20 @@ SQL SELECT *
 FROM Shippers;
 
 
-//************** DIVISIONS MAPPING LOAD **************
 Divisions_Map:
 MAPPING LOAD 
 	DivisionID,
     DivisionName;
 SQL SELECT *
 FROM Divisions;
+
+UnitCost_Map:
+MAPPING LOAD
+	ProductID,
+	UnitCost;
+SQL SELECT *
+FROM Products;
+
 ///$tab Dimensions
 //************** Customers table **************
 
@@ -115,8 +120,6 @@ FROM Categories;
 
 
 ///$tab Orders
-//***************ORDERS TABLE******************
-
 Orders:
 LOAD 
 	CustomerID,
@@ -138,7 +141,6 @@ SQL SELECT *
 FROM Orders;
 
 
-//*************** Order Details table ***************
 OrderDetails:
 LOAD Discount,
 LineNo,
@@ -147,7 +149,8 @@ ProductID,
 Quantity,
 UnitPrice,
 UnitPrice * Quantity * (1 - Discount) AS
-LineSalesAmount;
+LineSalesAmount,
+applymap('UnitCost_Map', ProductID, 0) * Quantity as CostOfGoodsSold;
 SQL SELECT * FROM `Order Details`;
 
 Order_Sales_Amount:
