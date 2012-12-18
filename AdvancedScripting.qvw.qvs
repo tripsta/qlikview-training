@@ -171,22 +171,8 @@ LOAD
 	Extension,
 	[Reports To],
 	[Year Salary]
-FROM Datasources\EmpOff.xls (biff, embedded labels, table is [Employee$]);
+FROM Datasources\Emp*.xls (biff, embedded labels, table is [Employee$]);
 		
-
-Employees_New:
-CONCATENATE (Employees) LOAD		
-	Office&'-'&EmpID AS BudgetKey,
-	EmpID AS EmployeeID,
-	[First Name]&' '&[Last Name] AS Name,	
-	Title,
-	[Hire Date],
-	Year([Hire Date]) AS HireYear,
-	Office,
-	Extension,
-	[Reports To],
-	[Year Salary]
-FROM Datasources\Employees_New.xls (biff, embedded labels, table is [Employee$]);		
 
 //*************** Offices table ***************
 Offices:
