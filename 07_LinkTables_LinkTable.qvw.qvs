@@ -1,0 +1,156 @@
+﻿///$tab Main
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$#,##0.00;($#,##0.00)';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+///$tab SynKey
+//Load two tables that have two matching field names
+//Process creates a Syn Key and a Syn Table
+//Results as shown in the Presentation tabs are consistent with the data
+Sales:
+LOAD 
+	Year,
+	Month,
+	[Customer Number],
+	[Sales Amount]
+FROM
+	LinkTable.xls (biff, embedded labels, table is [Sales$]);
+
+
+Budget:
+LOAD 
+	Year,
+	Month,
+	[Customer Number],
+	[Budget Amount]
+FROM
+	LinkTable.xls (biff, embedded labels, table is [Budget$]);
+
+Customer:
+LOAD 
+	[Customer Number],
+	[Customer Name]
+FROM
+	LinkTable.xls (biff, embedded labels, table is [Customer$]);
+///$tab Using a Key
+////Try to eliminate the Syn Key and Table by creating a single Key from Month & Year
+////Result are not consistent with the data
+
+//Sales:
+//LOAD 
+//	Year & '_' & Month & '_' & [Customer Number] AS keyYearMonthCustNo,
+//	Year,
+//	Month,
+//	[Customer Number],
+//	[Sales Amount]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//Budget:
+//LOAD 
+//	Year & '_' & Month & '_' & [Customer Number] AS keyYearMonthCustNo,
+//	//Year,
+//	//Month,
+//	//[Customer Number],
+//	[Budget Amount]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Budget$]);
+//
+//Customer:
+//LOAD 
+//	[Customer Number],
+//	[Customer Name]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Customer$]);
+///$tab Link Table
+////Create a Link Table that is similar to the Syn Table QV created
+////Results are once again consistent
+
+//Sales:
+//LOAD 
+//	Year & '_' & Month & '_' & [Customer Number] AS keyYearMonthCustNo,
+//	//Year,
+//	//Month,
+//	//[Customer Number],
+//	[Sales Amount]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//Budget:
+//LOAD 
+//	Year & '_' & Month & '_' & [Customer Number] AS keyYearMonthCustNo,
+//	//Year,
+//	//Month,
+//	//[Customer Number],
+//	[Budget Amount]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Budget$]);
+//
+//Customer:
+//LOAD 
+//	[Customer Number],
+//	[Customer Name]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Customer$]);
+//
+//
+////====================================================
+//// LINK TABLE
+////====================================================
+//
+//LinkTable:
+//LOAD DISTINCT
+//	Year & '_' & Month & '_' & [Customer Number] AS keyYearMonthCustNo,
+//	Year,
+//	Month,
+//	[Customer Number]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//CONCATENATE (LinkTable)
+//LOAD DISTINCT
+//	Year & '_' & Month & '_' & [Customer Number] AS keyYearMonthCustNo,
+//	Year,
+//	Month,
+//	[Customer Number]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Budget$]);
+///$tab Concatenate
+////Create a single table by doing a CONCATENATE LOAD of the Sales and Budget data
+////Differentiate the records by adding a RecSource field
+////Finish by LEFT JOINing the Customers into the table to create a single table
+////Customers could have been mapped into the single table by doing a MAPPING LOAD
+
+//Sales:
+//LOAD 
+//	Year,
+//	Month,
+//	[Customer Number],
+//	[Sales Amount],
+//	'Sales' AS RecSource
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//CONCATENATE (Sales)
+//LOAD 
+//	Year,
+//	Month,
+//	[Customer Number],
+//	[Budget Amount],
+//	'Budget' AS RecSource
+//FROM 
+//	LinkTable.xls (biff, embedded labels, table is [Budget$]);
+//
+//Customer:
+//LEFT JOIN (Sales)
+//LOAD 
+//	[Customer Number],
+//	[Customer Name]
+//FROM
+//	LinkTable.xls (biff, embedded labels, table is [Customer$]);
