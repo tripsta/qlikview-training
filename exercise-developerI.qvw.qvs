@@ -1,0 +1,162 @@
+﻿///$tab Main
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$#,##0.00;($#,##0.00)';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+
+OLEDB CONNECT32 TO [Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=C:\QlikViewTraining\DeveloperII\Chapter03\Datasources\QWT.mdb;Mode=Share Deny None;Extended Properties="";Jet OLEDB:System database="";Jet OLEDB:Registry Path="";Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False];
+///$tab Customers
+QUALIFY *;
+UNQUALIFY CustomerID,DivisionID;
+
+LOAD Address,
+    City,
+    CompanyName,
+    ContactName,
+    Country,
+    CustomerID,
+    DivisionID,
+    Fax,
+    Phone,
+    PostalCode,
+    StateProvince;
+SQL SELECT *
+FROM Customers;
+
+UNQUALIFY *;
+///$tab Products
+LOAD CategoryID,
+    ProductID,
+    ProductName,
+    QuantityPerUnit,
+    SupplierID,
+    UnitCost,
+    UnitPrice,
+    UnitsInStock,
+    UnitsOnOrder;
+SQL SELECT *
+FROM Products;
+
+
+QUALIFY *;
+UNQUALIFY CategoryID;
+LOAD CategoryID,
+    CategoryName,
+    Description;
+SQL SELECT *
+FROM Categories;
+UNQUALIFY *;
+///$tab Shipping
+MAPPING
+LOAD ShipperID,
+CompanyName;
+SQL SELECT *
+FROM Shippers;
+
+LOAD OrderID&'-'&LineNo as OrderDetailID,
+    ShipmentDate,    
+    ShipperID,
+    ApplyMap('Shippers', ShipperID) as Shipper;
+SQL SELECT *
+FROM Shipments;
+
+
+///$tab Orders
+
+QUALIFY ShipperID;
+LOAD CustomerID,
+    EmployeeID,
+    Freight,
+    OrderDate,
+    OrderID,
+    ShipperID;
+SQL SELECT *
+FROM Orders;
+UNQUALIFY *;
+
+QUALIFY *;
+UNQUALIFY OrderID,ProductID,OrderDetailID;
+LOAD Discount,
+    LineNo,
+    OrderID,
+    ProductID,
+    OrderID&'-'&LineNo as OrderDetailID,
+    Quantity,
+    UnitPrice;
+SQL SELECT *
+FROM `Order Details`;
+UNQUALIFY *;
+
+
+
+///$tab Suppliers
+QUALIFY *;
+UNQUALIFY SupplierID;
+Suppliers:
+LOAD SupplierID,
+    CompanyName as Supplier,
+    ContactName,
+    Address,
+    City,
+    PostalCode,
+    Country,
+    Phone,
+    Fax
+FROM C:\QlikViewTraining\DeveloperI\Chapter12\Datasources\Suppliers.xml (XmlSimple, Table is [Suppliers/_empty_]);
+
+UNQUALIFY *;
+
+///$tab Divisions
+
+LOAD DivisionID,
+    DivisionName;
+SQL SELECT *
+FROM Divisions;
+///$tab Employees
+Employees:
+LOAD EmpID as EmployeeID, 
+     [Last Name], 
+     [First Name], 
+     Title, 
+     [Hire Date], 
+     Office, 
+     Office &'-'& EmpID as OfficeEmployeeID,     
+     Extension, 
+     [Reports To], 
+     [Year Salary]
+FROM
+C:\QlikViewTraining\DeveloperI\Chapter12\Datasources\EmpOff.xls
+(biff, embedded labels, table is Employee$);
+
+///$tab Office
+Office:
+LOAD Office, 
+     OfficeAddress, 
+     OfficePostalCode, 
+     OfficeCity, 
+     OfficeStateProvince, 
+     OfficePhone, 
+     OfficeFax, 
+     OfficeCountry
+FROM
+C:\QlikViewTraining\DeveloperI\Chapter12\Datasources\EmpOff.xls
+(biff, embedded labels, table is Office$);
+
+///$tab Budget
+Budget:
+CrossTable(year, budget, 1)
+LOAD Office &'-'& EmployeeID as OfficeEmployeeID, 
+     [2005], 
+     [2006], 
+     [2007], 
+     [2008], 
+     [2009]
+FROM
+C:\QlikViewTraining\DeveloperI\Chapter12\Datasources\Budget.xls
+(biff, embedded labels, header is 1 lines, table is Sheet1$);
