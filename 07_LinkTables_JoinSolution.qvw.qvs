@@ -1,0 +1,169 @@
+﻿///$tab Main
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$#,##0.00;($#,##0.00)';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+
+
+
+///$tab SynKey
+//Sales:
+//Load 
+//	Year,
+//	Month,
+//	[Customer Number],
+//	[Sales Amount]
+//FROM LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//
+//Budget:
+//Load 
+//	Year,
+//	Month,
+//	[Customer Number],
+//	[Budget Amount]
+//FROM LinkTable.xls (biff, embedded labels, table is [Budget$]);
+//
+//Customer:
+//Load 
+//	[Customer Number],
+//	[Customer Name]
+//FROM LinkTable.xls (biff, embedded labels, table is [Customer$]);
+//
+///$tab Using a key
+//Sales:
+//Load 
+//	Year & '_' & Month & '_' & [Customer Number] as Key,
+//	Year,
+//	Month,
+//	[Customer Number],
+//	[Sales Amount]
+//FROM LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//Budget:
+//Load 
+//	Year & '_' & Month & '_' & [Customer Number] as Key,
+//	//Year,
+//	//Month,
+//	//[Customer Number],
+//	[Budget Amount]
+//FROM LinkTable.xls (biff, embedded labels, table is [Budget$]);
+//
+//Customer:
+//Load 
+//	[Customer Number],
+//	[Customer Name]
+//FROM LinkTable.xls (biff, embedded labels, table is [Customer$]);
+//
+//
+//
+///$tab Link Table
+//Sales:
+//Load 
+//	Year & '_' & Month & '_' & [Customer Number] as Key,
+//	//Year,
+//	//Month,
+//	//[Customer Number],
+//	[Sales Amount]
+//FROM LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//Budget:
+//Load 
+//	Year & '_' & Month & '_' & [Customer Number] as Key,
+//	//Year,
+//	//Month,
+//	//[Customer Number],
+//	[Budget Amount]
+//FROM LinkTable.xls (biff, embedded labels, table is [Budget$]);
+//
+//Customer:
+//Load 
+//	[Customer Number],
+//	[Customer Name]
+//FROM LinkTable.xls (biff, embedded labels, table is [Customer$]);
+//
+//
+////====================================================
+//// LINK TABLE
+////====================================================
+//
+//LinkTable:
+//Load DISTINCT
+//	Year & '_' & Month & '_' & [Customer Number] as Key,
+//	Year,
+//	Month,
+//	[Customer Number]
+//FROM LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//CONCATENATE(LinkTable)
+//Load DISTINCT
+//	Year & '_' & Month & '_' & [Customer Number] as Key,
+//	Year,
+//	Month,
+//	[Customer Number]
+//FROM LinkTable.xls (biff, embedded labels, table is [Budget$]);
+///$tab Concatenate
+Sales:
+Load 
+	Year,
+	Month,
+	[Customer Number],
+	[Sales Amount]
+FROM LinkTable.xls (biff, embedded labels, table is [Sales$]);
+
+concatenate (Sales)
+Load 
+	Year,
+	Month,
+	[Customer Number],
+	[Budget Amount]
+FROM LinkTable.xls (biff, embedded labels, table is [Budget$]);
+
+Customer:
+Load 
+	[Customer Number],
+	[Customer Name]
+FROM LinkTable.xls (biff, embedded labels, table is [Customer$]);
+///$tab Outer Join
+//SalesTemp:
+//Load 
+//	Year &	Month & [Customer Number] AS MyKey,
+//	Year,
+//	Month,
+//	[Customer Number],
+//	[Sales Amount]
+//FROM LinkTable.xls (biff, embedded labels, table is [Sales$]);
+//
+//Outer Join (SalesTemp)
+//Load 
+//	Year &	Month & [Customer Number] AS MyKey,
+//	Year,
+//	Month,
+//	[Customer Number],
+//	[Budget Amount]
+//FROM LinkTable.xls (biff, embedded labels, table is [Budget$]);
+//
+//Sales:
+//NOCONCATENATE
+//LOAD 
+//	MyKey,
+//	Year,
+//	Month,
+//	[Customer Number],
+//	if([Budget Amount],[Budget Amount],0) AS [Budget Amount],
+//	if([Sales Amount],[Sales Amount],0) AS [Sales Amount]
+//RESIDENT SalesTemp;
+//
+//DROP TABLE SalesTemp;
+//
+//Customer:
+//Load 
+//	[Customer Number],
+//	[Customer Name]
+//FROM LinkTable.xls (biff, embedded labels, table is [Customer$]);
